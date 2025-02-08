@@ -1,7 +1,6 @@
 const User = require("@models/User");
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const errorCode = require('@constants/errorCode');
 
 const resolvers = {
     Query: {
@@ -40,12 +39,7 @@ const resolvers = {
                 await user.save();
                 return user;
             } catch (error) {
-                switch (error.code) {
-                    case errorCode.Duplicate:
-                        throw new Error('Tên đăng nhập đã tồn tại');
-                    default:
-                        throw new Error("Lỗi server!"); // ✅ Trả về lỗi rõ ràng
-                }
+                throw new Error("Lỗi server!"); // ✅ Trả về lỗi rõ ràng
             }
         },
 
@@ -75,7 +69,7 @@ const resolvers = {
 
             return { id: user.id, username: user.username, email: user.email, token };
         },
-    
+
         /**
          * @description: Reset password
          * @param {*} _ 
