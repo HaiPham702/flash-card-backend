@@ -5,7 +5,7 @@ const { ApolloServer } = require("apollo-server-express");
 require("dotenv").config();
 const typeDefs = require("@graphql/schema");
 const resolvers = require("@graphql/resolvers");
-const auth = require("@/middleware/auth");
+const auth = require("@middleware/auth");
 
 const app = express();
 

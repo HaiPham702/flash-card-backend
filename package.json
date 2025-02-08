@@ -39,10 +39,10 @@
   },
   "_moduleAliases": {
     "@resolvers": "./resolvers",
-    "@models": "./src/models",
-    "@utils": "./src/utils",
-    "@graphql": "./src/graphql",
-    "@constants": "./src/constants",
-    "@": "./src"
+    "@models": "./models",
+    "@utils": "./utils",
+    "@graphql": "./graphql",
+    "@constants": "./constants",
+    "@middleware": "./middleware"
   }
 }
