@@ -95,32 +95,18 @@ const resolvers = {
     },
 };
 
+const query = `
+  users: [User]
+  user(id: ID!): User
+`
 
-const typeDefs = `
-  type User {
-    id: ID!
-    name: String
-    email: String
-    age: Int
-    phoneNumber: String
-    token: String
-    username: String!
-  }
-
-  type Query {
-    users: [User]
-    user(id: ID!): User
-  }
-
-  type Mutation {
+const mutation = `
     addUser(name: String!, email: String!, age: Int!, phoneNumber: String!, password: String!): User
     updateUser(id: ID!, name: String, email: String, age: Int, phoneNumber: String): User
     deleteUser(id: ID!): String
     register(username: String!, email: String!, password: String!): User!
     login(username: String!, password: String!): User!  # ✅ Thêm login
     resetPassword(username: String!, newpassword: String!): User
-  }
-`;
+`
 
-
-module.exports = { resolvers, typeDefs };
+module.exports = { resolvers, query, mutation };
