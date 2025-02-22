@@ -3,7 +3,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const { ApolloServer } = require("apollo-server-express");
 require("dotenv").config();
-const typeDefs = require("@graphql/schema");
+const {typeDefs, typeDefsDraw} = require("@graphql/schema");
 const resolvers = require("@graphql/resolvers");
 const auth = require("@middleware/auth");
 
@@ -31,7 +31,7 @@ async function startServer() {
 }
 
 app.get('/', (req, res) => {
-  res.send(typeDefs)
+  res.send(typeDefsDraw)
 })
 
 startServer();

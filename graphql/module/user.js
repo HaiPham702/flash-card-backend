@@ -105,7 +105,7 @@ const mutation = `
     updateUser(id: ID!, name: String, email: String, age: Int, phoneNumber: String): User
     deleteUser(id: ID!): String
     register(username: String!, email: String!, password: String!): User!
-    login(username: String!, password: String!): User!  # ✅ Thêm login
+    login(username: String!, password: String!): User! 
     resetPassword(username: String!, newpassword: String!): User
 `
 

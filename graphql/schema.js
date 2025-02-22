@@ -1,21 +1,27 @@
 const { gql } = require("apollo-server-express");
-const { query: userQuery, mutation: userMutation  } = require('@graphql/module/user');
+const { query: userQuery, mutation: userMutation } = require('@graphql/module/user');
 const { query: cardQuery, mutation: cardMutation } = require('@graphql/module/card');
+const { query: courseQuery, mutation: courseMutation } = require('@graphql/module/course');
 const type = require('@graphql/module/type');
 
+const typeDefsDraw = `
+${type}
+type Query {
+   ${userQuery}
+   ${cardQuery}
+   ${courseQuery}
+}
+
+type Mutation {
+   ${userMutation}
+   ${cardMutation}
+   ${courseMutation}
+}
+`
 
 const typeDefs = gql`
- ${type}
- type Query {
-    ${cardQuery}
-    ${userQuery}
- }
-
- type Mutation {
-    ${cardMutation}
-    ${userMutation}
- }
+  ${typeDefsDraw}
 `;
 
 
-module.exports = typeDefs;
+module.exports = { typeDefs, typeDefsDraw };
