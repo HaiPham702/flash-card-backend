@@ -111,9 +111,9 @@ router.patch('/:deckId/cards/:cardId', async (req, res) => {
         if (req.body.front) card.front = req.body.front;
         if (req.body.back) card.back = req.body.back;
         if (req.body.level) card.level = req.body.level;
-        if (req.body.image) card.image = req.body.image;
         if (req.body.lastReview) card.lastReview = req.body.lastReview;
         if (req.body.nextReview) card.nextReview = req.body.nextReview;
+        card.image = req.body.image;
 
         const updatedDeck = await deck.save();
         res.json(updatedDeck);
