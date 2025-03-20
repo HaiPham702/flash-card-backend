@@ -1,6 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const Deck = require('../models/Deck');
+const auth = require('../middleware/auth');
+
+// All routes below will be protected
+router.use(auth);
 
 // Get all decks
 router.get('/', async (req, res) => {
