@@ -4,6 +4,11 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
+// Health check endpoint
+router.get('/health', (req, res) => {
+    res.status(200).json({ status: 'OK', message: 'Auth service is running' });
+});
+
 // Register a new user
 router.post('/register', async (req, res) => {
     try {

@@ -3,6 +3,11 @@ const router = express.Router();
 const Deck = require('../models/Deck');
 const auth = require('../middleware/auth');
 
+// Health check endpoint
+router.get('/health', (req, res) => {
+    res.status(200).json({ status: 'OK', message: 'Decks service is running' });
+});
+
 // All routes below will be protected
 router.use(auth);
 
