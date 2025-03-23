@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const decksRouter = require('./routes/decks');
 const authRouter = require('./routes/auth');
+const aiRouter = require('./routes/ai');
 
 const app = express();
 
@@ -19,6 +20,7 @@ mongoose.connect(process.env.MONGODB_URI)
 // Routes
 app.use('/api/decks', decksRouter);
 app.use('/api/auth', authRouter);
+app.use('/api/ai', aiRouter);
 
 // Start server
 const port = process.env.PORT || 4000;

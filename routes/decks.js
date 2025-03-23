@@ -5,7 +5,7 @@ const auth = require('../middleware/auth');
 
 // Health check endpoint
 router.get('/health', (req, res) => {
-    res.status(200).json({ status: 'OK', message: 'Decks service is running' });
+    res.status(200).json({ status: 'OK', message: 'Decks service is running ver 1' });
 });
 
 // All routes below will be protected
