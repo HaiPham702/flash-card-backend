@@ -26,7 +26,7 @@ module.exports = async (req, res, next) => {
             return res.status(401).json({ message: 'Token has expired' });
         }
 
-        debugger
+        
 
         // Get user from database
         const user = await User.findById(decoded.userId).select('-password');
