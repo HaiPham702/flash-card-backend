@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
+const User = require('../models/User');
 
-module.exports = (req, res, next) => {
+module.exports = async (req, res, next) => {
     // Get token from header
     const token = req.header('x-auth-token');
 
@@ -25,8 +26,16 @@ module.exports = (req, res, next) => {
             return res.status(401).json({ message: 'Token has expired' });
         }
 
-        // Add user ID to request
-        req.userId = decoded.userId;
+        debugger
+
+        // Get user from database
+        const user = await User.findById(decoded.userId).select('-password');
+        if (!user) {
+            return res.status(401).json({ message: 'User not found' });
+        }
+
+        // Add user to request
+        req.user = user;
         next();
     } catch (err) {
         console.log('Token verification failed:', err.message);
