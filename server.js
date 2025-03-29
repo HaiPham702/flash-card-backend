@@ -6,6 +6,7 @@ const decksRouter = require('./routes/decks');
 const authRouter = require('./routes/auth');
 const aiRouter = require('./routes/ai');
 const speakingRoutes = require('./routes/speakingRoutes');
+const attendanceRoutes = require('./routes/attendanceRoutes');
 
 const app = express();
 
@@ -23,6 +24,7 @@ app.use('/api/decks', decksRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/ai', aiRouter);
 app.use('/api/speaking', speakingRoutes);
+app.use('/api/attendance', attendanceRoutes);
 
 // Start server
 const port = process.env.PORT || 5000;
