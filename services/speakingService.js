@@ -4,7 +4,7 @@ const OpenAI = require('openai')
 
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_KEY || '')
 const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY
+    apiKey: process.env.OPENAI_API_KEY ?? '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'
 })
 
 const prompt = `Generate an IELTS Speaking topic for today with the following structure. All parts should be thematically related around a central topic (e.g., technology, education, environment, etc.):

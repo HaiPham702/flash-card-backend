@@ -4,10 +4,6 @@ const OpenAI = require('openai');
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const WritingSubmission = require('../models/WritingSubmission');
 
-// Initialize AI clients
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const geminiModel = genAI.getGenerativeModel({ model: "gemini-pro" });
@@ -82,7 +78,7 @@ Format your response strictly as a JSON object with this structure:
 const evaluateWithOpenAI = async (messages, retryCount = 0) => {
   try {
     const openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY
+      apiKey: process.env.OPENAI_API_KEY ?? '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'
     });
 
     const completion = await openai.chat.completions.create({
