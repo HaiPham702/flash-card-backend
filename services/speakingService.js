@@ -1,12 +1,17 @@
 const { GoogleGenerativeAI } = require('@google/generative-ai')
 const SpeakingTopic = require('../models/SpeakingTopic')
+const OpenAI = require('openai')
 
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_KEY || '')
+const openai = new OpenAI({
+  apiKey: "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"
+})
 
-const prompt = `Generate an IELTS Speaking topic for today with the following structure:
-1. Part 1: 4 questions about general topics
-2. Part 2: A topic for a 2-minute speech with 3 follow-up questions
-3. Part 3: 3 questions for discussion
+const prompt = `Generate an IELTS Speaking topic for today with the following structure. All parts should be thematically related around a central topic (e.g., technology, education, environment, etc.):
+
+1. Part 1: 4 questions about the central topic, starting with general questions and gradually becoming more specific
+2. Part 2: A topic for a 2-minute speech that is directly related to the Part 1 questions, with 3 follow-up questions that connect to the main topic
+3. Part 3: 3 discussion questions that explore broader implications or deeper aspects of the central topic
 
 Format the response as a JSON object with the following structure:
 {
@@ -22,7 +27,12 @@ Format the response as a JSON object with the following structure:
   }
 }
 
-Make sure the questions are natural and follow IELTS speaking format. Return correct format for conversion`
+Make sure:
+- All questions are natural and follow IELTS speaking format
+- Questions progress logically from general to specific
+- The central theme is clear and consistent across all parts
+- Questions in Part 3 should be more abstract and analytical than Part 1
+- Return correct format for conversion`
 
 const speakingService = {
     async getTodayTopic() {
@@ -34,23 +44,45 @@ const speakingService = {
             return existingTopic
         }
 
-
         // Nếu chưa có, tạo chủ đề mới
         return this.generateNewTopic()
     },
 
     async generateNewTopic() {
         try {
-            const genAI = new GoogleGenerativeAI("AIzaSyDsPyA0aKIfFIYKn_Du60e2jAFhcSVxDlo");
-            const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
-            const result = await model.generateContent(prompt)
-            const response = await result.response
-            const text = response.text()
+            // Try OpenAI first
+            const completion = await openai.chat.completions.create({
+                model: "gpt-3.5-turbo",
+                messages: [
+                    {
+                        role: "system",
+                        content: "You are an expert IELTS speaking examiner. Generate IELTS speaking topics following the exact format specified."
+                    },
+                    {
+                        role: "user",
+                        content: prompt
+                    }
+                ],
+                temperature: 0.7,
+                response_format: { type: "json_object" }
+            })
 
-            // Parse JSON response
-            const topicData = JSON.parse(text.replace(/json|`/g, ""))
+            const content = completion.choices[0].message.content
+            if (!content) {
+                throw new Error('Empty response from OpenAI')
+            }
 
-            // Tạo chủ đề mới trong database
+            const topicData = JSON.parse(content)
+            
+            // Validate response structure
+            const requiredFields = ['part1', 'part2', 'part3']
+            const missingFields = requiredFields.filter(field => !(field in topicData))
+            
+            if (missingFields.length > 0) {
+                throw new Error(`Invalid response format. Missing fields: ${missingFields.join(', ')}`)
+            }
+
+            // Create new topic in database
             const today = new Date().toISOString().split('T')[0]
             const newTopic = await SpeakingTopic.create({
                 date: today,
@@ -61,8 +93,32 @@ const speakingService = {
 
             return newTopic
         } catch (error) {
-            console.error('Error generating speaking topic:', error)
-            throw new Error('Failed to generate speaking topic')
+            console.error('OpenAI generation failed, falling back to Google:', error.message)
+            
+            try {
+                // Fallback to Google
+                const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" })
+                const result = await model.generateContent(prompt)
+                const response = await result.response
+                const text = response.text()
+
+                // Parse JSON response
+                const topicData = JSON.parse(text.replace(/json|`/g, ""))
+
+                // Create new topic in database
+                const today = new Date().toISOString().split('T')[0]
+                const newTopic = await SpeakingTopic.create({
+                    date: today,
+                    part1: topicData.part1,
+                    part2: topicData.part2,
+                    part3: topicData.part3
+                })
+
+                return newTopic
+            } catch (googleError) {
+                console.error('Both AI generations failed:', googleError)
+                throw new Error('Failed to generate speaking topic with both OpenAI and Google')
+            }
         }
     }
 }

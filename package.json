@@ -1,7 +1,7 @@
 {
-    "name": "anki-clone-server",
+    "name": "flash-card-server",
     "version": "1.0.0",
-    "description": "Backend server for Flash Card application",
+    "description": "Flash Card Server with AI Writing Assessment",
     "main": "server.js",
     "scripts": {
         "start": "node server.js",
@@ -12,14 +12,15 @@
     "author": "",
     "license": "ISC",
     "dependencies": {
-        "@google/generative-ai": "^0.24.0",
+        "@google/generative-ai": "^0.2.0",
         "bcrypt": "^5.1.1",
         "cors": "^2.8.5",
         "date-fns": "^4.1.0",
         "dotenv": "^16.0.3",
         "express": "^4.18.2",
         "jsonwebtoken": "^9.0.2",
-        "mongoose": "^7.0.3"
+        "mongoose": "^7.0.3",
+        "openai": "^4.28.0"
     },
     "devDependencies": {
         "nodemon": "^2.0.22"
