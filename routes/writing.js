@@ -82,7 +82,7 @@ Format your response strictly as a JSON object with this structure:
 const evaluateWithOpenAI = async (messages, retryCount = 0) => {
   try {
     const openai = new OpenAI({
-      apiKey: "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"
+      apiKey: process.env.OPENAI_API_KEY
     });
 
     const completion = await openai.chat.completions.create({

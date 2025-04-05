@@ -4,7 +4,7 @@ const OpenAI = require('openai')
 
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_KEY || '')
 const openai = new OpenAI({
-  apiKey: "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"
+    apiKey: process.env.OPENAI_API_KEY || "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"
 })
 
 const prompt = `Generate an IELTS Speaking topic for today with the following structure. All parts should be thematically related around a central topic (e.g., technology, education, environment, etc.):
@@ -73,11 +73,11 @@ const speakingService = {
             }
 
             const topicData = JSON.parse(content)
-            
+
             // Validate response structure
             const requiredFields = ['part1', 'part2', 'part3']
             const missingFields = requiredFields.filter(field => !(field in topicData))
-            
+
             if (missingFields.length > 0) {
                 throw new Error(`Invalid response format. Missing fields: ${missingFields.join(', ')}`)
             }
@@ -94,7 +94,7 @@ const speakingService = {
             return newTopic
         } catch (error) {
             console.error('OpenAI generation failed, falling back to Google:', error.message)
-            
+
             try {
                 // Fallback to Google
                 const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" })
