@@ -12,7 +12,6 @@ exports.markAttendance = async (req, res) => {
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
 
-    debugger
 
     const existingAttendance = await Attendance.findOne({
       userId,
@@ -64,7 +63,6 @@ exports.getWeeklyAttendance = async (req, res) => {
 
 // Lấy chi tiết điểm danh theo tháng
 exports.getMonthlyAttendance = async (req, res) => {
-  debugger
   try {
     const userId = req.user._id;
     const { month, year } = req.query;
