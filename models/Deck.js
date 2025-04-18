@@ -13,6 +13,10 @@ const cardSchema = new mongoose.Schema({
         type: String,
         required: false
     },
+    pronunciation: {
+        type: String,
+        required: false
+    },
     level: {
         type: Number,
         default: 1

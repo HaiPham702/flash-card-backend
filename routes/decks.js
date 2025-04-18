@@ -130,6 +130,7 @@ router.post('/:id/cards', async (req, res) => {
             front: req.body.front,
             back: req.body.back,
             image: req.body.image,
+            pronunciation: req.body.pronunciation,
             level: 1,
             order: maxOrder
         });
@@ -161,6 +162,7 @@ router.patch('/:deckId/cards/:cardId', async (req, res) => {
         if (req.body.nextReview) card.nextReview = req.body.nextReview;
         if (req.body.order !== undefined) card.order = req.body.order;
         card.image = req.body.image;
+        if (req.body.pronunciation !== undefined) card.pronunciation = req.body.pronunciation;
 
         const updatedDeck = await deck.save();
         res.json(updatedDeck);
