@@ -16,35 +16,48 @@ class SchedulerService {
 
         console.log('🚀 Khởi tạo Telegram Scheduler Service...');
 
-        // Cron job chạy mỗi ngày lúc 8:30 AM
-        // Format: giây phút giờ ngày tháng thứ
-        // '30 8 * * *' = 8:30 AM mỗi ngày
-        const dailyNotificationJob = cron.schedule('30 8 * * *', async () => {
-            console.log('⏰ Chạy cron job gửi thông báo hàng ngày - 8:30 AM');
-            
-            try {
-                const result = await telegramService.sendDailyNotifications();
-                console.log(`✅ Hoàn thành gửi thông báo tự động: ${result?.success || 0} thành công, ${result?.failed || 0} thất bại`);
-            } catch (error) {
-                console.error('❌ Lỗi trong cron job gửi thông báo:', error);
-            }
-        }, {
-            scheduled: false, // Chưa start ngay
-            timezone: "Asia/Ho_Chi_Minh" // Múi giờ Việt Nam
-        });
-
-        // Lưu job để có thể quản lý sau này
-        this.jobs.set('dailyNotifications', dailyNotificationJob);
-
-        // Start job
-        dailyNotificationJob.start();
-        console.log('✅ Đã thiết lập cron job gửi thông báo hàng ngày lúc 8:30 AM (GMT+7)');
+        // Thiết lập multiple cron jobs: 8:30, 10:30, 12:30, 14:30, 16:30
+        this.setupMultipleNotificationJobs();
 
         // Tùy chọn: Cron job test gửi thông báo mỗi 5 phút (để test)
         // Uncomment dòng dưới nếu muốn test
         // this.setupTestJob();
 
         this.isInitialized = true;
+    }
+
+    // Setup multiple notification jobs (cứ 2 tiếng từ 8:30 đến 17:00)
+    setupMultipleNotificationJobs() {
+        const schedules = [
+            { time: '30 8 * * *', label: '8:30 AM' },
+            { time: '30 10 * * *', label: '10:30 AM' },
+            { time: '30 12 * * *', label: '12:30 PM' },
+            { time: '30 14 * * *', label: '2:30 PM' },
+            { time: '30 16 * * *', label: '4:30 PM' }
+        ];
+
+        schedules.forEach((schedule, index) => {
+            const jobName = `notification_${schedule.label.replace(/[:\s]/g, '_')}`;
+            
+            const job = cron.schedule(schedule.time, async () => {
+                console.log(`⏰ Chạy cron job gửi thông báo - ${schedule.label}`);
+                
+                try {
+                    const result = await telegramService.sendDailyNotifications();
+                    console.log(`✅ [${schedule.label}] Hoàn thành gửi thông báo: ${result?.success || 0} thành công, ${result?.failed || 0} thất bại`);
+                } catch (error) {
+                    console.error(`❌ [${schedule.label}] Lỗi trong cron job:`, error);
+                }
+            }, {
+                scheduled: true,
+                timezone: "Asia/Ho_Chi_Minh"
+            });
+
+            this.jobs.set(jobName, job);
+            console.log(`✅ Đã thiết lập cron job: ${schedule.label} (${schedule.time})`);
+        });
+
+        console.log(`🎯 Hoàn thành thiết lập ${schedules.length} cron jobs (8:30 AM - 4:30 PM, cứ 2 tiếng)`);
     }
 
     // Setup job test (gửi thông báo mỗi 5 phút) - chỉ dùng để test
@@ -158,6 +171,141 @@ class SchedulerService {
         console.log(`✅ Đã thiết lập job mới lúc ${hour}:${minute} (GMT+7)`);
         
         return jobName;
+    }
+
+    // Lấy danh sách time slots hiện tại
+    getScheduleConfig() {
+        const defaultSchedules = [
+            { time: '30 8 * * *', label: '8:30 AM', enabled: true },
+            { time: '30 10 * * *', label: '10:30 AM', enabled: true },
+            { time: '30 12 * * *', label: '12:30 PM', enabled: true },
+            { time: '30 14 * * *', label: '2:30 PM', enabled: true },
+            { time: '30 16 * * *', label: '4:30 PM', enabled: true }
+        ];
+
+        return defaultSchedules.map(schedule => {
+            const jobName = `notification_${schedule.label.replace(/[:\s]/g, '_')}`;
+            const job = this.jobs.get(jobName);
+            
+            return {
+                ...schedule,
+                jobName,
+                running: job ? job.running : false,
+                scheduled: job ? job.scheduled : false
+            };
+        });
+    }
+
+    // Toggle enable/disable một time slot cụ thể
+    toggleTimeSlot(timeLabel, enabled) {
+        const jobName = `notification_${timeLabel.replace(/[:\s]/g, '_')}`;
+        const job = this.jobs.get(jobName);
+
+        if (!job) {
+            console.log(`⚠️ Không tìm thấy job: ${jobName}`);
+            return false;
+        }
+
+        if (enabled) {
+            job.start();
+            console.log(`▶️ Đã bật job: ${timeLabel}`);
+        } else {
+            job.stop();
+            console.log(`⏸️ Đã tắt job: ${timeLabel}`);
+        }
+
+        return true;
+    }
+
+    // Cập nhật toàn bộ schedule config
+    updateScheduleConfig(scheduleConfig) {
+        console.log('🔄 Cập nhật schedule configuration...');
+
+        // Dừng tất cả jobs hiện tại
+        for (const [name, job] of this.jobs) {
+            if (name.startsWith('notification_')) {
+                job.destroy();
+                this.jobs.delete(name);
+            }
+        }
+
+        // Tạo jobs mới theo config
+        scheduleConfig.forEach(schedule => {
+            if (schedule.enabled) {
+                const jobName = `notification_${schedule.label.replace(/[:\s]/g, '_')}`;
+                
+                const job = cron.schedule(schedule.time, async () => {
+                    console.log(`⏰ Chạy cron job gửi thông báo - ${schedule.label}`);
+                    
+                    try {
+                        const result = await telegramService.sendDailyNotifications();
+                        console.log(`✅ [${schedule.label}] Hoàn thành gửi thông báo: ${result?.success || 0} thành công, ${result?.failed || 0} thất bại`);
+                    } catch (error) {
+                        console.error(`❌ [${schedule.label}] Lỗi trong cron job:`, error);
+                    }
+                }, {
+                    scheduled: true,
+                    timezone: "Asia/Ho_Chi_Minh"
+                });
+
+                this.jobs.set(jobName, job);
+                console.log(`✅ Tạo job mới: ${schedule.label} (${schedule.time})`);
+            }
+        });
+
+        console.log('🎯 Hoàn thành cập nhật schedule configuration');
+        return true;
+    }
+
+    // Thêm time slot mới
+    addCustomTimeSlot(time, label) {
+        const jobName = `notification_${label.replace(/[:\s]/g, '_')}`;
+        
+        // Kiểm tra xem job đã tồn tại chưa
+        if (this.jobs.has(jobName)) {
+            console.log(`⚠️ Job đã tồn tại: ${jobName}`);
+            return false;
+        }
+
+        // Validate cron expression
+        if (!cron.validate(time)) {
+            console.log(`❌ Cron expression không hợp lệ: ${time}`);
+            return false;
+        }
+
+        const job = cron.schedule(time, async () => {
+            console.log(`⏰ Chạy cron job custom - ${label}`);
+            
+            try {
+                const result = await telegramService.sendDailyNotifications();
+                console.log(`✅ [${label}] Hoàn thành gửi thông báo: ${result?.success || 0} thành công, ${result?.failed || 0} thất bại`);
+            } catch (error) {
+                console.error(`❌ [${label}] Lỗi trong cron job:`, error);
+            }
+        }, {
+            scheduled: true,
+            timezone: "Asia/Ho_Chi_Minh"
+        });
+
+        this.jobs.set(jobName, job);
+        console.log(`✅ Đã thêm custom time slot: ${label} (${time})`);
+        return true;
+    }
+
+    // Xóa time slot
+    removeTimeSlot(timeLabel) {
+        const jobName = `notification_${timeLabel.replace(/[:\s]/g, '_')}`;
+        const job = this.jobs.get(jobName);
+
+        if (job) {
+            job.destroy();
+            this.jobs.delete(jobName);
+            console.log(`🗑️ Đã xóa job: ${timeLabel}`);
+            return true;
+        } else {
+            console.log(`⚠️ Không tìm thấy job để xóa: ${timeLabel}`);
+            return false;
+        }
     }
 
     // Cleanup khi shutdown server

@@ -2,12 +2,16 @@
 
 ## 📋 Tổng Quan
 
-Hệ thống Telegram Bot tự động gửi flashcard ngẫu nhiên hàng ngày lúc 8:30 sáng cho tất cả người dùng đã đăng ký. Bot hỗ trợ:
+Hệ thống Telegram Bot tự động gửi flashcard ngẫu nhiên **cứ 2 tiếng từ 8:30 sáng đến 4:30 chiều** cho tất cả người dùng đã đăng ký. Bot hỗ trợ:
 
-- ✅ Gửi thông báo flashcard hàng ngày tự động
-- ✅ Commands tương tác với bot
+- ✅ Gửi thông báo flashcard **5 lần/ngày** (8:30, 10:30, 12:30, 14:30, 16:30)
+- ✅ Commands tương tác với bot (/start, /card, /stop)
 - ✅ Quản lý user thông qua getUpdates API
-- ✅ Hỗ trợ ảnh và text formatting
+- ✅ Hỗ trợ ảnh và text formatting với Markdown
+- ✅ **UI quản lý hoàn chỉnh** với dashboard
+- ✅ **Schedule management** - bật/tắt từng time slot
+- ✅ **Broadcast functionality** - gửi tin nhắn tùy chỉnh
+- ✅ **Real-time statistics** và monitoring
 - ✅ API management cho admin
 
 ## 🚀 Bước 1: Tạo Bot với BotFather
@@ -108,20 +112,26 @@ Bot tự động đăng ký user khi họ gửi tin nhắn đầu tiên:
 Các API sau cần authentication (JWT token):
 
 ```bash
-# Test bot connection
-GET /api/telegram/test
+# Basic APIs
+GET /api/telegram/test                          # Test bot connection
+POST /api/telegram/send-daily-notifications     # Gửi thông báo thủ công
+POST /api/telegram/sync-users                   # Đồng bộ users từ getUpdates
+POST /api/telegram/send-card/{chatId}           # Gửi card cho user cụ thể
+GET /api/telegram/stats                         # Xem thống kê
 
-# Gửi thông báo thủ công
-POST /api/telegram/send-daily-notifications
+# NEW: User Management APIs
+GET /api/telegram/users                         # Lấy danh sách users
+POST /api/telegram/users/{chatId}/settings      # Cập nhật user settings
 
-# Đồng bộ users từ getUpdates
-POST /api/telegram/sync-users
+# NEW: Schedule Management APIs  
+GET /api/telegram/schedule                      # Lấy cấu hình schedule
+POST /api/telegram/schedule                     # Cập nhật schedule config
+POST /api/telegram/schedule/toggle              # Bật/tắt time slot
+POST /api/telegram/schedule/add                 # Thêm custom time slot
+DELETE /api/telegram/schedule/{timeLabel}       # Xóa time slot
 
-# Gửi card cho user cụ thể
-POST /api/telegram/send-card/{chatId}
-
-# Xem thống kê
-GET /api/telegram/stats
+# NEW: Broadcast APIs
+POST /api/telegram/broadcast                    # Broadcast tin nhắn hoặc cards
 ```
 
 ### 4.4 Ví Dụ Sử Dụng API
@@ -144,11 +154,61 @@ const sync = await fetch('/api/telegram/sync-users', {
 });
 ```
 
+## 🖥️ UI Quản Lý (MỚI!)
+
+### 7.1 Truy Cập UI Management
+- **URL:** `http://localhost:3000/telegram`
+- **Navigation:** Nhấp "🤖 Telegram Bot" trên menu chính
+- **Yêu cầu:** Đăng nhập với tài khoản admin
+
+### 7.2 Tính Năng UI
+#### 📊 Statistics Dashboard
+- Tổng số users Telegram
+- Users có bật thông báo
+- Time slots đang hoạt động
+- Users nhận nhắc nhở hàng ngày
+
+#### ⏰ Schedule Management Tab
+- Xem tất cả time slots (8:30, 10:30, 12:30, 14:30, 16:30)
+- Bật/tắt từng time slot riêng biệt
+- Thêm custom time slots mới
+- Xóa time slots không cần
+- Real-time status monitoring
+
+#### 👥 Users Management Tab
+- Danh sách tất cả users Telegram
+- Thông tin chi tiết (tên, username, chat ID)
+- Trạng thái thông báo của từng user
+- Gửi flashcard cho user cụ thể
+- Cài đặt notification preferences
+
+#### 🚀 Quick Actions Tab
+- Gửi thông báo ngay lập tức
+- Test bot connection
+- Broadcast tin nhắn tùy chỉnh
+- Đồng bộ users từ Telegram
+
+#### 📢 Broadcast Modal
+- Gửi tin nhắn text tùy chỉnh
+- Gửi flashcard ngẫu nhiên
+- Chọn users cụ thể hoặc gửi tất cả
+- Real-time progress tracking
+
+### 7.3 Responsive Design
+- Tối ưu cho desktop và mobile
+- Dark/Light theme tự động
+- Intuitive user interface
+- Real-time updates
+
 ## ⏰ Cấu Hình Thời Gian
 
-### 5.1 Thời Gian Mặc Định
-- **8:30 AM** (GMT+7) mỗi ngày
-- Múi giờ: `Asia/Ho_Chi_Minh`
+### 8.1 Multiple Time Slots Mặc Định
+- **8:30 AM** - Sáng
+- **10:30 AM** - Giữa sáng  
+- **12:30 PM** - Trưa
+- **2:30 PM** - Chiều
+- **4:30 PM** - Chiều muộn
+- **Múi giờ:** `Asia/Ho_Chi_Minh` (GMT+7)
 
 ### 5.2 Thay Đổi Thời Gian
 Chỉnh sửa trong `schedulerService.js`:
@@ -285,16 +345,74 @@ curl http://localhost:4000/api/telegram/stats
 
 ---
 
+## 🧪 Testing Scripts (CẬP NHẬT)
+
+### Test Scripts Có Sẵn
+```bash
+# Setup bot từ A-Z
+node scripts/setup-telegram.js
+
+# Test cơ bản bot và APIs  
+node scripts/test-telegram.js
+
+# NEW: Test hệ thống hoàn chỉnh
+node scripts/test-telegram-system.js
+```
+
+### Test System Script (MỚI)
+Script `test-telegram-system.js` test toàn bộ hệ thống:
+- ✅ Multiple time slots configuration
+- ✅ All API endpoints 
+- ✅ Schedule management functionality
+- ✅ Broadcast capabilities
+- ✅ UI integration testing
+- ✅ End-to-end workflow
+
+## 📊 System Monitoring
+
+### Real-time Logs
+Server sẽ log chi tiết:
+```
+⏰ Chạy cron job gửi thông báo - 8:30 AM
+✅ [8:30 AM] Hoàn thành gửi thông báo: 15 thành công, 0 thất bại
+⏰ Chạy cron job gửi thông báo - 10:30 AM  
+✅ [10:30 AM] Hoàn thành gửi thông báo: 15 thành công, 0 thất bại
+```
+
+### Health Check
+- UI Dashboard: Real-time statistics
+- API Health: `/api/telegram/test`
+- Job Status: `/api/telegram/schedule`
+- User Status: `/api/telegram/stats`
+
 ## 🎉 Kết Luận
 
-Sau khi cấu hình xong:
+### ✨ Tính Năng Hoàn Chỉnh
+1. ✅ **Multiple Time Slots**: 5 lần gửi mỗi ngày (8:30-16:30, cứ 2 tiếng)
+2. ✅ **UI Management**: Dashboard quản lý hoàn chỉnh  
+3. ✅ **Schedule Control**: Bật/tắt từng time slot độc lập
+4. ✅ **Broadcast System**: Gửi tin nhắn tùy chỉnh cho users
+5. ✅ **User Management**: Quản lý chi tiết từng user
+6. ✅ **Real-time Stats**: Monitoring và analytics
+7. ✅ **API Complete**: 15+ endpoints quản lý
+8. ✅ **Responsive UI**: Tối ưu mọi thiết bị
 
-1. ✅ Bot sẽ tự động gửi flashcard hàng ngày lúc 8:30 AM
-2. ✅ Users có thể tương tác qua commands
-3. ✅ Admin có thể quản lý thông qua APIs
-4. ✅ Hệ thống tự động đăng ký users mới
+### 🚀 Quick Start
+```bash
+# 1. Setup bot
+node scripts/setup-telegram.js
 
-**Lưu ý:** Nhớ backup Bot Token và cấu hình webhook cho production environment!
+# 2. Start server  
+npm run dev
+
+# 3. Access UI
+# http://localhost:3000/telegram
+
+# 4. Test everything
+node scripts/test-telegram-system.js
+```
+
+**Lưu ý:** Backup Bot Token và cấu hình webhook cho production!
 
 ---
 
