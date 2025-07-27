@@ -331,12 +331,12 @@ router.post('/broadcast', auth, async (req, res) => {
     try {
         const { message, userIds, type = 'text' } = req.body;
         
-        if (!message) {
-            return res.status(400).json({
-                success: false,
-                error: 'Message là required'
-            });
-        }
+        // if (!message) {
+        //     return res.status(400).json({
+        //         success: false,
+        //         error: 'Message là required'
+        //     });
+        // }
 
         const User = require('../models/User');
         let targetUsers;
