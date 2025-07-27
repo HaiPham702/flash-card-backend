@@ -10,6 +10,7 @@ const aiRouter = require('./routes/ai');
 const speakingRoutes = require('./routes/speakingRoutes');
 const attendanceRoutes = require('./routes/attendanceRoutes');
 const messengerRouter = require('./routes/messenger');
+const telegramRouter = require('./routes/telegram');
 
 // Connect to MongoDB
 connectDB();
@@ -31,6 +32,7 @@ app.use('/api/ai', aiRouter);
 app.use('/api/speaking', speakingRoutes);
 app.use('/api/attendance', attendanceRoutes);
 app.use('/api/messenger', messengerRouter);
+app.use('/api/telegram', telegramRouter);
 const writingRouter = require('./routes/writing');
 app.use('/api/writing', writingRouter);
 
@@ -44,6 +46,39 @@ app.use((err, req, res, next) => {
 });
 
 const PORT = process.env.PORT || 4000;
-app.listen(PORT, () => {
+
+// Start server
+const server = app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
+    
+    // Initialize Telegram scheduler
+    const schedulerService = require('./services/schedulerService');
+    schedulerService.init();
+});
+
+// Graceful shutdown
+process.on('SIGTERM', () => {
+    console.log('SIGTERM received. Shutting down gracefully...');
+    
+    // Cleanup scheduler
+    const schedulerService = require('./services/schedulerService');
+    schedulerService.destroy();
+    
+    server.close(() => {
+        console.log('Process terminated');
+        process.exit(0);
+    });
+});
+
+process.on('SIGINT', () => {
+    console.log('SIGINT received. Shutting down gracefully...');
+    
+    // Cleanup scheduler
+    const schedulerService = require('./services/schedulerService');
+    schedulerService.destroy();
+    
+    server.close(() => {
+        console.log('Process terminated');
+        process.exit(0);
+    });
 }); 

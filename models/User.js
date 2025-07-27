@@ -18,6 +18,28 @@ const userSchema = new Schema({
         type: String,
         required: true
     },
+    telegramChatId: {
+        type: String,
+        sparse: true,
+        unique: true
+    },
+    telegramUsername: {
+        type: String
+    },
+    telegramNotifications: {
+        enabled: {
+            type: Boolean,
+            default: false
+        },
+        dailyReminder: {
+            type: Boolean,
+            default: true
+        },
+        timePreference: {
+            type: String,
+            default: '08:30' // 8:30 AM
+        }
+    },
     createdAt: {
         type: Date,
         default: Date.now
