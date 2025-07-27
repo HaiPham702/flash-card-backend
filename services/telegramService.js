@@ -126,8 +126,7 @@ class TelegramService {
         const pronunciation = card.pronunciation || '';
         
         let message = `🎴 *Flashcard hôm nay*\n\n`;
-        message += `🔤 *${front}*\n\n`;
-        message += `💡 *Mặt sau:*\n ${back}\n`;
+        message += `🔤 *${front}* : ${back}\n`;
         
         if (pronunciation) {
             message += `\n🗣️ *Phát âm:* /${pronunciation}/`;
