@@ -127,8 +127,8 @@ class TelegramService {
         
         let message = `🎴 *Flashcard hôm nay*\n\n`;
         message += `📚 *Deck:* ${deckName}\n\n`;
-        message += `🔤 *Mặt trước:* ${front}\n\n`;
-        message += `💡 *Mặt sau:* ${back}\n`;
+        message += `🔤 *${front}*\n\n`;
+        message += `💡 *Mặt sau:*\n ${back}\n`;
         
         if (pronunciation) {
             message += `\n🗣️ *Phát âm:* /${pronunciation}/`;
