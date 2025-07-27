@@ -9,6 +9,7 @@ const authRouter = require('./routes/auth');
 const aiRouter = require('./routes/ai');
 const speakingRoutes = require('./routes/speakingRoutes');
 const attendanceRoutes = require('./routes/attendanceRoutes');
+const messengerRouter = require('./routes/messenger');
 
 // Connect to MongoDB
 connectDB();
@@ -29,6 +30,7 @@ app.use('/api/auth', authRouter);
 app.use('/api/ai', aiRouter);
 app.use('/api/speaking', speakingRoutes);
 app.use('/api/attendance', attendanceRoutes);
+app.use('/api/messenger', messengerRouter);
 const writingRouter = require('./routes/writing');
 app.use('/api/writing', writingRouter);
 
