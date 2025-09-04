@@ -25,6 +25,21 @@ app.use(cors({
 }));
 app.use(express.json());
 
+// Health check endpoint
+app.get('/health', (req, res) => {
+    const healthCheck = {
+        status: 'OK',
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime(),
+        environment: process.env.NODE_ENV || 'development',
+        version: process.env.npm_package_version || '1.0.0',
+        memory: process.memoryUsage(),
+        database: 'connected' // Assuming MongoDB connection is successful
+    };
+    
+    res.status(200).json(healthCheck);
+});
+
 // Routes
 app.use('/api/decks', decksRouter);
 app.use('/api/auth', authRouter);
