@@ -31,9 +31,9 @@ class SchedulerService {
         const schedules = [
             { time: '30 8 * * *', label: '8:30 AM' },
             { time: '30 10 * * *', label: '10:30 AM' },
-            { time: '30 12 * * *', label: '12:30 PM' },
             { time: '30 14 * * *', label: '2:30 PM' },
-            { time: '30 16 * * *', label: '4:30 PM' }
+            { time: '30 16 * * *', label: '4:30 PM' },
+            { time: '30 20 * * *', label: '8:30 PM' },
         ];
 
         schedules.forEach((schedule, index) => {
