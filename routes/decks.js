@@ -8,6 +8,68 @@ router.get('/health', (req, res) => {
     res.status(200).json({ status: 'OK', message: 'Decks service is running ver 1' });
 });
 
+// Get current week deck (or create if not exists)
+router.get('/current-week', async (req, res) => {
+    try {
+        // Calculate current week number
+        const now = new Date();
+        const startOfYear = new Date(now.getFullYear(), 0, 1);
+        const pastDaysOfYear = (now - startOfYear) / 86400000;
+        const weekNumber = Math.ceil((pastDaysOfYear + startOfYear.getDay() + 1) / 7);
+        
+        // Calculate start and end of current week
+        const startOfWeek = new Date(now);
+        startOfWeek.setDate(now.getDate() - now.getDay()); // Sunday
+        startOfWeek.setHours(0, 0, 0, 0);
+        
+        const endOfWeek = new Date(startOfWeek);
+        endOfWeek.setDate(startOfWeek.getDate() + 6); // Saturday
+        endOfWeek.setHours(23, 59, 59, 999);
+
+        // Find deck created in current week
+        let deck = await Deck.findOne({
+            createdAt: {
+                $gte: startOfWeek,
+                $lte: endOfWeek
+            }
+        })
+        .populate('creator', 'name email')
+        .populate('modifier', 'name email');
+
+        // If no deck found, create new one
+        if (!deck) {
+            // Get the maximum order value of existing decks
+            const maxOrderDeck = await Deck.findOne().sort({ order: -1 });
+            const maxOrder = maxOrderDeck ? maxOrderDeck.order + 1 : 0;
+
+            deck = new Deck({
+                name: `Week ${weekNumber}`,
+                description: "Deck tạo tự động",
+                order: maxOrder,
+                creator: req.user._id,
+                modifier: req.user._id
+            });
+
+            deck = await deck.save();
+            
+            // Populate creator and modifier for the newly created deck
+            deck = await Deck.findById(deck._id)
+                .populate('creator', 'name email')
+                .populate('modifier', 'name email');
+        }
+
+        // Sort cards by order
+        if (deck.cards && deck.cards.length > 0) {
+            deck.cards.sort((a, b) => a.order - b.order);
+        }
+
+        res.json(deck);
+    } catch (err) {
+        console.error('Error getting/creating current week deck:', err);
+        res.status(500).json({ message: err.message });
+    }
+});
+
 // All routes below will be protected
 router.use(auth);
 
