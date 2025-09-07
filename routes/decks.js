@@ -8,6 +8,9 @@ router.get('/health', (req, res) => {
     res.status(200).json({ status: 'OK', message: 'Decks service is running ver 1' });
 });
 
+// All routes below will be protected
+router.use(auth);
+
 // Get current week deck (or create if not exists)
 router.get('/current-week', async (req, res) => {
     try {
@@ -69,9 +72,6 @@ router.get('/current-week', async (req, res) => {
         res.status(500).json({ message: err.message });
     }
 });
-
-// All routes below will be protected
-router.use(auth);
 
 // Get all decks
 router.get('/', async (req, res) => {
