@@ -49,7 +49,9 @@ app.use('/api/attendance', attendanceRoutes);
 app.use('/api/messenger', messengerRouter);
 app.use('/api/telegram', telegramRouter);
 const writingRouter = require('./routes/writing');
+const n8nRouter = require('./routes/n8n');
 app.use('/api/writing', writingRouter);
+app.use('/api/n8n', n8nRouter);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
