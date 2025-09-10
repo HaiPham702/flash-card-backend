@@ -3,7 +3,7 @@ const axios = require('axios');
 const router = express.Router();
 
 // N8N webhook endpoint
-const N8N_WEBHOOK_URL = 'https://n8n-s2gy.onrender.com/healthz';
+const N8N_WEBHOOK_URL = 'https://n8n-s2gy.onrender.com';
 
 /**
  * GET /api/n8n/health
@@ -83,3 +83,4 @@ router.post('/webhook', async (req, res) => {
 });
 
 module.exports = router;
+

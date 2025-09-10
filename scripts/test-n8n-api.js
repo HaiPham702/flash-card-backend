@@ -50,3 +50,4 @@ if (require.main === module) {
 }
 
 module.exports = testN8nAPI;
+
