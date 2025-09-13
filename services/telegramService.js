@@ -1,11 +1,20 @@
 const axios = require('axios');
 const User = require('../models/User');
 const Deck = require('../models/Deck');
+const { GoogleGenerativeAI } = require('@google/generative-ai');
 
 class TelegramService {
     constructor() {
         this.botToken = process.env.TELEGRAM_BOT_TOKEN;
         this.baseURL = `https://api.telegram.org/bot${this.botToken}`;
+        
+        // Initialize Gemini AI
+        if (process.env.GEMINI_API_KEY) {
+            this.genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+            this.aiModel = this.genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+        } else {
+            console.warn('⚠️ GEMINI_API_KEY not configured - AI examples disabled');
+        }
         
         if (!this.botToken) {
             console.warn('⚠️ TELEGRAM_BOT_TOKEN not configured');
@@ -119,8 +128,43 @@ class TelegramService {
         }
     }
 
+    // Tạo ví dụ sử dụng từ với AI
+    async generateWordExample(word, meaning) {
+        try {
+            if (!this.aiModel) {
+                return null; // AI không khả dụng
+            }
+
+            const prompt = `Tạo một ví dụ câu đơn giản và thực tế sử dụng từ "${word}" có nghĩa là "${meaning}".
+            
+            Yêu cầu:
+            - Câu ví dụ phải ngắn gọn (tối đa 12 từ)
+            - Dễ hiểu và thực tế
+            - Thể hiện rõ nghĩa của từ
+            - Chỉ trả về câu ví dụ, không cần giải thích thêm
+            
+            Ví dụ format: "She feels happy when she sees her friends."`;
+
+            const result = await this.aiModel.generateContent(prompt);
+            const example = result.response.text().trim();
+            
+            // Kiểm tra độ dài hợp lý
+            if (example.length > 100 || example.length < 10) {
+                console.warn(`⚠️ AI example too long/short for word "${word}": ${example}`);
+                return null;
+            }
+            
+            console.log(`✅ Generated AI example for "${word}": ${example}`);
+            return example;
+            
+        } catch (error) {
+            console.error(`❌ Lỗi tạo ví dụ AI cho từ "${word}":`, error.message);
+            return null;
+        }
+    }
+
     // Format tin nhắn card
-    formatCardMessage(deckName, card) {
+    async formatCardMessage(deckName, card) {
         const front = card.front || 'Không có nội dung';
         const back = card.back || 'Không có nội dung';
         const pronunciation = card.pronunciation || '';
@@ -130,6 +174,18 @@ class TelegramService {
         
         if (pronunciation) {
             message += `\n🗣️ *Phát âm:* /${pronunciation}/`;
+        }
+        
+        // Tạo ví dụ với AI nếu có từ và nghĩa
+        if (front && back && front !== 'Không có nội dung' && back !== 'Không có nội dung') {
+            try {
+                const aiExample = await this.generateWordExample(front, back);
+                if (aiExample) {
+                    message += `\n\n💡 *Ví dụ:* ${aiExample}`;
+                }
+            } catch (error) {
+                console.warn('⚠️ Không thể tạo ví dụ AI:', error.message);
+            }
         }
         
         message += `\n\n⏰ Hãy ôn tập và học từ mới mỗi ngày nhé! 📖✨`;
@@ -147,7 +203,7 @@ class TelegramService {
                 return false;
             }
 
-            const message = this.formatCardMessage(cardData.deckName, cardData.card);
+            const message = await this.formatCardMessage(cardData.deckName, cardData.card);
 
             // Nếu có ảnh, gửi ảnh với caption
             if (cardData.card.image) {

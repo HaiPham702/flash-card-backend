@@ -13,6 +13,7 @@ Hệ thống Telegram Bot tự động gửi flashcard ngẫu nhiên **cứ 2 ti
 - ✅ **Broadcast functionality** - gửi tin nhắn tùy chỉnh
 - ✅ **Real-time statistics** và monitoring
 - ✅ API management cho admin
+- ✅ **AI-powered examples** - Tự động tạo ví dụ sử dụng từ với Gemini AI
 
 ## 🚀 Bước 1: Tạo Bot với BotFather
 
@@ -49,8 +50,12 @@ Thêm vào file `.env`:
 # Telegram Bot Configuration
 TELEGRAM_BOT_TOKEN=YOUR_BOT_TOKEN_HERE
 
+# Gemini AI Configuration (for word examples)
+GEMINI_API_KEY=YOUR_GEMINI_API_KEY_HERE
+
 # Ví dụ:
 # TELEGRAM_BOT_TOKEN=6123456789:AAFz-abc123def456ghi789jkl012mno345
+# GEMINI_API_KEY=AIzaSyA1b2C3d4E5f6G7h8I9j0K1l2M3n4O5p6Q
 ```
 
 ### 2.2 Cài Đặt Dependencies
@@ -266,11 +271,11 @@ curl -X POST http://localhost:4000/api/telegram/sync-users \
 
 📚 **Deck:** English Vocabulary
 
-🔤 **Mặt trước:** Hello
-
-💡 **Mặt sau:** Xin chào
+🔤 **Hello** : Xin chào
 
 🗣️ **Phát âm:** /həˈloʊ/
+
+💡 **Ví dụ:** She says hello to her neighbor every morning.
 
 ⏰ Hãy ôn tập và học từ mới mỗi ngày nhé! 📖✨
 ```
@@ -343,6 +348,75 @@ curl http://localhost:4000/api/telegram/test
 curl http://localhost:4000/api/telegram/stats
 ```
 
+## 🤖 AI-Powered Word Examples (MỚI!)
+
+### 9.1 Tổng Quan Tính Năng
+Bot tự động tạo ví dụ sử dụng từ vựng bằng **Gemini AI** cho mỗi flashcard:
+- ✅ Ví dụ câu **đơn giản và thực tế**
+- ✅ Thể hiện rõ nghĩa của từ
+- ✅ Ngắn gọn (tối đa 12 từ)
+- ✅ Tự động fallback nếu AI không khả dụng
+
+### 9.2 Cấu Hình AI
+Thêm vào `.env`:
+```env
+# Gemini AI API Key (bắt buộc cho tính năng AI examples)
+GEMINI_API_KEY=your_gemini_api_key_here
+```
+
+### 9.3 Cách Hoạt Động
+1. **Khi gửi flashcard**, hệ thống:
+   - Lấy từ (front) và nghĩa (back) từ card
+   - Gọi Gemini AI với prompt tối ưu
+   - Tạo ví dụ câu sử dụng từ đó
+   - Thêm vào tin nhắn Telegram
+
+2. **Prompt Template:**
+   ```
+   Tạo ví dụ câu đơn giản sử dụng từ "{word}" có nghĩa "{meaning}"
+   - Câu ngắn gọn (tối đa 12 từ)
+   - Dễ hiểu và thực tế
+   - Thể hiện rõ nghĩa của từ
+   ```
+
+### 9.4 Error Handling
+- ✅ **AI không khả dụng**: Card vẫn gửi bình thường, chỉ thiếu ví dụ
+- ✅ **API rate limit**: Timeout và retry logic
+- ✅ **Ví dụ không hợp lý**: Bỏ qua và không hiển thị
+- ✅ **Logging chi tiết**: Theo dõi thành công/thất bại
+
+### 9.5 Testing AI Examples
+```bash
+# Test tính năng AI examples riêng biệt
+node scripts/test-telegram-ai-examples.js
+
+# Output ví dụ:
+# Testing: "beautiful" (đẹp)
+# ✅ Generated: The sunset looks beautiful tonight.
+# 
+# Testing: "intelligent" (thông minh)  
+# ✅ Generated: My sister is very intelligent at math.
+```
+
+### 9.6 Format Tin Nhắn Mới
+```
+🎴 *Flashcard hôm nay*
+
+🔤 *beautiful* : đẹp
+
+🗣️ *Phát âm:* /ˈbjuːtɪfʊl/
+
+💡 *Ví dụ:* The sunset looks beautiful tonight.
+
+⏰ Hãy ôn tập và học từ mới mỗi ngày nhé! 📖✨
+```
+
+### 9.7 Performance & Costs
+- **Latency**: Thêm ~2-3 giây cho mỗi flashcard
+- **Costs**: Gemini API có quota miễn phí hàng tháng
+- **Optimization**: Cache examples để tránh duplicate calls
+- **Fallback**: Graceful degradation nếu AI down
+
 ---
 
 ## 🧪 Testing Scripts (CẬP NHẬT)
@@ -357,6 +431,9 @@ node scripts/test-telegram.js
 
 # NEW: Test hệ thống hoàn chỉnh
 node scripts/test-telegram-system.js
+
+# NEW: Test AI examples generation
+node scripts/test-telegram-ai-examples.js
 ```
 
 ### Test System Script (MỚI)
